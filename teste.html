@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Monitoramento de Coordenadas</title>
+</head>
+<body>
+    <h1>Posição Atual do Ônibus</h1>
+    <div id="coordinates">Carregando...</div>
+    
+    <script>
+        async function fetchCoordinates() {
+            try {
+                const response = await fetch("http://localhost:8000/get_bus_position/AAA-1111");
+                const data = await response.json();
+                document.getElementById("coordinates").innerText = 
+                    `Posição: x=${data.x}, y=${data.y}`;
+            } catch (error) {
+                console.error("Erro ao buscar coordenadas:", error);
+            }
+        }
+        
+        // Atualiza as coordenadas a cada segundo
+        setInterval(fetchCoordinates, 1000);
+    </script>
+</body>
+</html>

@@ -1,35 +1,16 @@
-import {writeFile} from 'fs'
+import {writeFile} from 'fs';
+import axios from 'axios';
 
-var map = L.map('map')//.setView([-21.776265, -43.369174], 13); // coord da uf
+var map = L.map('map').setView([-21.776265, -43.369174], 13);
 
-// camada de mapa openstreetmap
+// Camada de mapa OpenStreetMap
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
-loop_locator()
-
-function onLocationFound(e) {
-    var radius = e.accuracy;
-    writeLatLngToFile(e.latlng)
-
-    L.marker(e.latlng).addTo(map)
-    .bindPopup(e.latlng).openPopup();
-    
-    L.circle(e.latlng, radius).addTo(map);
-
-
-}
-
-function onLocationError(e) {
-    alert(e.message);
-}
-
 async function loop_locator() {    
     while (true) {
-        
-        // Executa o mapa de localização
         map.locate({
             setView: true, 
             maxZoom: 16, 
@@ -37,26 +18,40 @@ async function loop_locator() {
             timeout: 10000
         });
         
-        // Definir o que fazer quando a localização for encontrada ou ocorrer erro
         map.on('locationfound', onLocationFound);
         map.on('locationerror', onLocationError);
-        
-        console.log("esperando")
-        // Espera 60 segundos usando Promise
+
+        console.log("Esperando 60 segundos...");
         await new Promise(resolve => setTimeout(resolve, 60000));
-        console.log("esperado")
     }
 }
 
-function writeLatLngToFile(latlng) {
-    const data = JSON.stringify(latlng);
-    writeFile('latlng.json', data, (err) => {
-        if (err) {
-            console.error('Error writing to file:', err);
-        } else {
-            console.log('latlng.json created successfully');
-        }
-    });
+
+function onLocationFound(e) {
+    var radius = e.accuracy;
+    const { lat, lng } = e.latlng;
+
+    L.marker(e.latlng).addTo(map).bindPopup(`Latitude: ${lat}, Longitude: ${lng}`).openPopup();
+    L.circle(e.latlng, radius).addTo(map);
+
+    sendLatLngToServer(lat, lng);
 }
 
-// luiz, marcelo e stephan: passagem do dado de hardware/ onibus que contém o hardware e a posição dele para o backend.
+function onLocationError(e) {
+    alert(e.message);
+}
+
+async function sendLatLngToServer(lat, lng) {
+    try {
+        await axios.post('http://localhost:8000/location', {
+            placa: 'AAA-1111',
+            x: lat,
+            y: lng
+        });
+        console.log('Localização enviada com sucesso');
+    } catch (error) {
+        console.error('Erro ao enviar localização:', error);
+    }
+}
+
+loop_locator();
