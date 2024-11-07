@@ -42,7 +42,4 @@ def send_location_to_server(location):
         print('Erro ao enviar localização:', e)
 
 if __name__ == "__main__":
-    while True:
-        location = get_hardware_location()  # Substitua por gerador aleatório para teste
-        send_location_to_server(location)
-        time.sleep(5)  # Envia a localização a cada 5 segundos
+     # Envia a localização a cada 5 segundos
